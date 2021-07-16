@@ -34,15 +34,12 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr CreateData(std::vector<std::vector<float>> p
   		point.z = 0;
 
   		cloud->points.push_back(point);
-
   	}
   	cloud->width = cloud->points.size();
   	cloud->height = 1;
 
   	return cloud;
-
 }
-
 
 void render2DTree(Node* node, pcl::visualization::PCLVisualizer::Ptr& viewer, Box window, int& iteration, uint depth=0)
 {
@@ -69,10 +66,23 @@ void render2DTree(Node* node, pcl::visualization::PCLVisualizer::Ptr& viewer, Bo
 
 		render2DTree(node->left,viewer, lowerWindow, iteration, depth+1);
 		render2DTree(node->right,viewer, upperWindow, iteration, depth+1);
-
-
 	}
+}
 
+void proximityRecursor(float distanceTol, const std::vector<std::vector<float>>& points, 
+						std::vector<bool>& processed, std::vector<int>& cluster, KdTree* tree, int idx)
+{
+	processed[idx] = true; //mark point as processed
+	cluster.push_back(idx); //add point to cluster
+	std::vector<int> closePointsIds = tree->search(points[idx], distanceTol);
+
+	for (int pointId: closePointsIds) // iterate through each nearby point
+	{
+		if(!processed[pointId])
+		{
+			proximityRecursor(distanceTol, points, processed, cluster, tree, pointId);
+		}
+	}
 }
 
 std::vector<std::vector<int>> euclideanCluster(const std::vector<std::vector<float>>& points, KdTree* tree, float distanceTol)
@@ -80,10 +90,19 @@ std::vector<std::vector<int>> euclideanCluster(const std::vector<std::vector<flo
 
 	// TODO: Fill out this function to return list of indices for each cluster
 
-	std::vector<std::vector<int>> clusters;
- 
-	return clusters;
+	std::vector<std::vector<int>> clusters; //"clusters" vector of vector of integers to store points ids belonging to clusters
+	std::vector<bool> processed(points.size(), false); //"processed" vector with size equal to the number of points and initialize as false
 
+	for(int idx = 0; idx < points.size(); idx++) //iterate through each point
+  	{
+		if (!processed[idx]) // check if the current point has been processed
+		{
+			std::vector<int> cluster; //create cluster
+			proximityRecursor(distanceTol, points, processed, cluster, tree, idx);
+			clusters.push_back(cluster);
+		}
+  	}
+	return clusters;
 }
 
 int main ()
