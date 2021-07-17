@@ -55,13 +55,13 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer, ProcessPointCloud
     renderBox(viewer,egoBox, 0,Color(0,0,1));
 
     pcl::PointCloud<pcl::PointXYZI>::Ptr filteredCloud (new pcl::PointCloud<pcl::PointXYZI>);
-    filteredCloud = pointProcessorI->FilterCloud(inputCloud, 0.2 , Eigen::Vector4f (-10.0f, -5.0f, -2.0f, 1), Eigen::Vector4f (50.0f, 5.0f, 2.0f, 1));
+    filteredCloud = pointProcessorI->FilterCloud(inputCloud, 0.15 , Eigen::Vector4f (-20.0f, -6.0f, -5.0f, 1), Eigen::Vector4f (30.0f, 7.0f, 5.0f, 1));
 
     std::pair<pcl::PointCloud<pcl::PointXYZI>::Ptr, pcl::PointCloud<pcl::PointXYZI>::Ptr> segmentCloud = pointProcessorI->SegmentPlane(filteredCloud, 100, 0.2);
 
     renderPointCloud(viewer,segmentCloud.second,"ground",Color(0,1,0));
     
-    std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> obstaclesClusters = pointProcessorI->Clustering(segmentCloud.first, 0.5, 10, 1000);
+    std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> obstaclesClusters = pointProcessorI->Clustering(segmentCloud.first, 0.4, 15, 1500);
 
     int clusterId = 1;
     std::vector<Color> colors = {Color(1,0,0), Color(1,1,0), Color(0,1,1)};
@@ -156,7 +156,7 @@ int main (int argc, char** argv)
      
     // For streaming
     ProcessPointClouds<pcl::PointXYZI>* pointProcessorI = new ProcessPointClouds<pcl::PointXYZI>();
-    std::vector<boost::filesystem::path> stream = pointProcessorI->streamPcd("../src/sensors/data/pcd/data_2");
+    std::vector<boost::filesystem::path> stream = pointProcessorI->streamPcd("../src/sensors/data/pcd/data_1");
     auto streamIterator = stream.begin();
     pcl::PointCloud<pcl::PointXYZI>::Ptr inputCloudI;
 
